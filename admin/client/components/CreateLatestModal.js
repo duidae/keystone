@@ -97,7 +97,7 @@ var CreateLatestModal = React.createClass({
     if (tagIDs && tagIDs.length > 0 && this.props.onLatestsAdd) {
       this.props.onLatestsAdd(tagIDs.map(tagID => {
         const tagName = tagID && this._itemsCache[tagID] ? this._itemsCache[tagID].name : '';
-        return { id: tagID, name: tagName}
+        return { id: tagID, name: tagName };
       }));
     }
   },

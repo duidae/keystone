@@ -156,9 +156,9 @@ const LatestListView = React.createClass({
   },
   onLatestsAdd2(newLatests) {
     if (Array.isArray(newLatests) && newLatests.length > 0) {
-      this.loadLatestInfo(newLatests,  (err, latests) => {
+      this.loadLatestInfo(newLatests, (err, latests) => {
         if (err) return;
-        this.setState({ latests:  [...latests, ...this.state.latests] });
+        this.setState({ latests: [...latests, ...this.state.latests] });
       });
     }
   },

@@ -68,13 +68,13 @@ const LatestListView = React.createClass({
     this.updateLatestsState();
   },
   updateLatestsState() {
-    this.loadLatestsInfo().then(latests => {
+    this.loadLatests().then(latests => {
       this.setState({ latests: latests, isReady: true });
     }, err => {
       this.setState({ latests: [], isReady: true });
     });
   },
-  loadLatestsInfo() {
+  loadLatests() {
     return new Promise((resolve, reject) => {
       // Get tags that latest_order > 0 & sorted with latest_order incrementally
       const filters = 'filters=' + encodeURIComponent('{"latest_order":{"mode":"gt","value":0}}') + '&sort=latest_order';
@@ -88,36 +88,40 @@ const LatestListView = React.createClass({
         if (!data || !data.results) {
           return reject(new Error('Empty query result!'));
         }
-        async.map(data.results, (tag, done) => {
-          if (tag && tag.id) {
-            // Get # of posts, newest post date of tag
-            const filters = 'filters=' + encodeURIComponent(`{"tags":{"inverted":false,"value":["${tag.id}"]}}`) + '&select=title,name,state,publishedDate&limit=1&sort=-publishedDate';
-            xhr({
-              url: Keystone.adminPath + '/api/posts?' + filters,
-              responseType: 'json',
-            }, (err, resp, data) => {
-              if (err) return done(err);
-              if (!data) return done(new Error('Empty data!'));
-              let count = 0;
-              let newestDate;
-              if (data.count > 0 && Array.isArray(data.results) && data.results.length > 0) {
-                count = data.count;
-                newestDate = data.results[0].fields.publishedDate;
-              }
-              done(null, {
-                id: tag.id,
-                name: tag.name,
-                numPost: count,
-                newestDate: newestDate
-              });
-            });
-          }
-        }, (err, latests) => {
+        const callback = (err, latests) => {
           if (err) return reject(new Error('Fail to load # of posts/newest post date!'));
           resolve(latests);
-        });
+        };
+        this.loadLatestInfo(data.results, callback);
       });
     });
+  },
+  loadLatestInfo(tags, callback) {
+    async.map(tags, (tag, done) => {
+      if (tag && tag.id) {
+        // Get # of posts, newest post date of tag
+        const filters = 'filters=' + encodeURIComponent(`{"tags":{"inverted":false,"value":["${tag.id}"]}}`) + '&select=title,name,state,publishedDate&limit=1&sort=-publishedDate';
+        xhr({
+          url: Keystone.adminPath + '/api/posts?' + filters,
+          responseType: 'json',
+        }, (err, resp, data) => {
+          if (err) return done(err);
+          if (!data) return done(new Error('Empty data!'));
+          let count = 0;
+          let newestDate;
+          if (data.count > 0 && Array.isArray(data.results) && data.results.length > 0) {
+            count = data.count;
+            newestDate = data.results[0].fields.publishedDate;
+          }
+          done(null, {
+            id: tag.id,
+            name: tag.name,
+            numPost: count,
+            newestDate: newestDate
+          });
+        });
+      }
+    }, callback);
   },
   updateLatestOrder(id, latestOrder) {
     return new Promise((resolve, reject) => {
@@ -147,6 +151,14 @@ const LatestListView = React.createClass({
         }
         // Refresh page when tags are added
         window.location.reload();
+      });
+    }
+  },
+  onLatestsAdd2(newLatests) {
+    if (Array.isArray(newLatests) && newLatests.length > 0) {
+      this.loadLatestInfo(newLatests,  (err, latests) => {
+        if (err) return;
+        this.setState({ latests:  [...latests, ...this.state.latests] });
       });
     }
   },
@@ -273,6 +285,21 @@ const LatestListView = React.createClass({
       </div>
     );
   },
+  onClickSave() {
+    // TODO: update savedLatests to latests, update each latest's latest_order
+  },
+  renderSave() {
+    return (
+      <div className="EditForm__footer">
+        <Button key="save" type="primary" onClick={this.onClickSave}>Save</Button>
+        {/*
+        <Button key="reset" onClick={this.onClickReset} type="link-cancel">
+          <ResponsiveText hiddenXS="reset changes" visibleXS="reset" />
+        </Button>
+        */}
+      </div>
+    );
+  },
   render() {
     return !this.state.isReady ? (
       <div className="view-loading-indicator"><Spinner size="md" /></div>
@@ -297,6 +324,7 @@ const LatestListView = React.createClass({
         </header>
         <div className="keystone-body">
           {this.renderActiveState()}
+          {this.renderSave()}
         </div>
         <Footer
           appversion={this.props.appversion}
@@ -309,7 +337,7 @@ const LatestListView = React.createClass({
           err={this.props.createFormErrors}
           isOpen={this.state.isCreateModalOpen}
           list={this.state.list}
-          onLatestsAdd={this.onLatestsAdd}
+          onLatestsAdd={this.onLatestsAdd2}
           onCancel={() => this.toggleCreateModal(false)}
           values={this.props.createFormData}
         />

@@ -93,9 +93,12 @@ var CreateLatestModal = React.createClass({
   },
   onLatestsAdd() {
     const selectedTags = this.state.value;
-    const tagsArray = Array.isArray(selectedTags) ? selectedTags : selectedTags.split(',');
-    if (tagsArray && tagsArray.length > 0 && this.props.onLatestsAdd) {
-      this.props.onLatestsAdd(tagsArray);
+    const tagIDs = Array.isArray(selectedTags) ? selectedTags : selectedTags.split(',');
+    if (tagIDs && tagIDs.length > 0 && this.props.onLatestsAdd) {
+      this.props.onLatestsAdd(tagIDs.map(tagID => {
+        const tagName = tagID && this._itemsCache[tagID] ? this._itemsCache[tagID].name : '';
+        return { id: tagID, name: tagName}
+      }));
     }
   },
   renderAlerts() {

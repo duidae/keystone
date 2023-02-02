@@ -1,15 +1,9 @@
-import ColorPicker from 'react-color';
-import Field from '../Field';
 import React from 'react';
+import ColorPicker from 'react-color';
 import { FormInput, InputGroup } from 'elemental';
+import Field from '../Field';
 
 const PICKER_TYPES = ['chrome', 'compact', 'material', 'photoshop', 'sketch', 'slider', 'swatches'];
-const TRANSPARENT_BG
-	= `<svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-		<g fill="#CCCCCC">
-			<path d="M0,0 L8,0 L8,8 L0,8 L0,0 Z M8,8 L16,8 L16,16 L8,16 L8,8 Z M0,16 L8,16 L8,24 L0,24 L0,16 Z M16,0 L24,0 L24,8 L16,8 L16,0 Z M16,16 L24,16 L24,24 L16,24 L16,16 Z" />
-		</g>
-	</svg>`;
 
 module.exports = Field.create({
   displayName: 'ColorField',
@@ -70,7 +64,13 @@ module.exports = Field.create({
     return (this.props.value) ? (
       <span className="field-type-color__swatch" style={{ backgroundColor: this.props.value }} />
     ) : (
-      <span className="field-type-color__swatch" dangerouslySetInnerHTML={{ __html: TRANSPARENT_BG }} />
+      <span className="field-type-color__swatch">
+        <svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+          <g fill="#CCCCCC">
+            <path d="M0,0 L8,0 L8,8 L0,8 L0,0 Z M8,8 L16,8 L16,16 L8,16 L8,8 Z M0,16 L8,16 L8,24 L0,24 L0,16 Z M16,0 L24,0 L24,8 L16,8 L16,0 Z M16,16 L24,16 L24,24 L16,24 L16,16 Z" />
+          </g>
+        </svg>
+      </span>
     );
   },
 
